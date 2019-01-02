@@ -134,7 +134,8 @@ def main():
         min_angle_deg=3.0,
         ndigits=2,
         stroke_width=2,
-        fill_opacity=0.5
+        fill_opacity=0.5,
+        )
 
 
 if __name__ == '__main__':
