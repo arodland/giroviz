@@ -16,6 +16,7 @@ from cartopy.feature.nightshade import Nightshade
 matplotlib.style.use('ggplot')
 from scipy import interpolate
 #import scipy
+import os
 import sys
 import logging
 import urllib.request, json
@@ -39,9 +40,8 @@ date = dt.datetime.now(timezone.utc) #.strftime('%Y, %m, %d, %H, %M')
 def main():
     plt.clf()
 
-    with urllib.request.urlopen("http://metrics.af7ti.com:8080/stations.json") as url:
+    with urllib.request.urlopen(os.getenv("METRICS_URI")) as url:
         data = json.loads(url.read().decode())
-        print(data)
 
     df = json_normalize(data)
   
