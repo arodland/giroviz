@@ -113,16 +113,16 @@ def main():
     
     plt.title(metric + ' ' + str(now))
    
-    df = df[['station.name', 'time', metric, 'cs', 'altitude', 'station.longitude', 'station.latitude']]
+#    df = df[['station.name', 'time', metric, 'cs', 'altitude', 'station.longitude', 'station.latitude']]
 
-    df = df.round(2)
+#    df = df.round(2)
 
-    the_table = table(ax, df,
-          bbox=[0,-1.25,1,1],
-          cellLoc = 'left',)
+#    the_table = table(ax, df,
+#          bbox=[0,-1.25,1,1],
+#          cellLoc = 'left',)
 
-    for key, cell in the_table.get_celld().items():
-        cell.set_linewidth(.25)
+#    for key, cell in the_table.get_celld().items():
+#        cell.set_linewidth(.25)
  
     plt.tight_layout()
     plt.savefig('/output/{}.png'.format(metric), dpi=300,bbox_inches='tight')
