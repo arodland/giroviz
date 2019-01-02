@@ -63,7 +63,7 @@ def main():
 
     df = df.dropna(subset=[metric])
 
-    df.ix[df['station.longitude'] > 180, 'station.longitude'] = df['station.longitude'] - 360
+    df.loc[df['station.longitude'] > 180, 'station.longitude'] = df['station.longitude'] - 360
     df.sort_values(by=['station.longitude'], inplace=True)
    
 
