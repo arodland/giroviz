@@ -63,21 +63,25 @@ def main():
 
     df = df.dropna(subset=[metric])
 
-    df.loc[df['station.longitude'] > 180, 'station.longitude'] = df['station.longitude'] - 360
+    df2 = df.copy()
+    df2.loc[df2['station.longitude'] > 180, 'station.longitude'] = df2['station.longitude'] - 360
+    df2.loc[df2['station.longitude'] > 0, 'station.longitude'] = df2['station.longitude'] + 360
+    df2['id'] = 0 - df2['id']
+    df = df.append(df2)
+
     df.sort_values(by=['station.longitude'], inplace=True)
    
 
     # grid data
     
     numcols, numrows = 100, 100
-    xi = np.linspace(df['station.longitude'].min(), df['station.longitude'].max(), numcols)
-    yi = np.linspace(df['station.latitude'].min(), df['station.latitude'].max(),numrows)
+    xi = np.linspace(-180, 180, numcols)
+    yi = np.linspace(-80, 80, numrows)
     xi, yi = np.meshgrid(xi, yi)
     # interpolate safe way with no extrapolation
     x, y, z = df['station.longitude'].values, df['station.latitude'].values, df[metric].values
     rbf = interpolate.Rbf(x, y, z, function='linear')
     zi = rbf(xi, yi)
-    
     
     #plot data
     
