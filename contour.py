@@ -95,7 +95,7 @@ def main():
     
     ax.add_feature(cartopy.feature.LAND)
     ax.set_global()
-    ax.add_feature(Nightshade(date, alpha=0.04))
+    ax.add_feature(Nightshade(date, alpha=0.08))
 
     ax.grid(linewidth=.5, color='black', alpha=0.25, linestyle='--')
     ax.set_xticks([-180, -160, -140, -120,-100, -80, -60,-40,-20, 0, 20, 40, 60,80,100, 120,140, 160,180], crs=ccrs.PlateCarree())
