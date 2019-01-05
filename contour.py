@@ -82,7 +82,7 @@ def main():
     loni, lati = np.meshgrid(loni, lati)
     x, y, z = sph_to_xyz(df['station.longitude'].values, df['station.latitude'].values)
     t = df[metric].values
-    rbf = interpolate.Rbf(x, y, z, t, function='linear')
+    rbf = interpolate.Rbf(x, y, z, t, function='linear', smooth=0.25)
 
     xi, yi, zi = sph_to_xyz(loni, lati)
     zi = rbf(xi, yi, zi)
