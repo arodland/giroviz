@@ -55,7 +55,7 @@ def main():
     df = json_normalize(data)
   
     #delete low confidence measurements
-    df = df.drop(df[pd.to_numeric(df.cs) < 20].index)
+    df = df.drop(df[pd.to_numeric(df.cs) == 0].index)
     df = df.drop(df[df[metric] == 0].index)
     df = df.dropna(subset=[metric])
 
