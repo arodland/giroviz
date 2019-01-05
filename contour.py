@@ -37,6 +37,15 @@ logger = logging.getLogger()
 now = dt.datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M')
 date = dt.datetime.now(timezone.utc) #.strftime('%Y, %m, %d, %H, %M')
 
+def sph_to_xyz(lon, lat):
+    lon = lon * np.pi / 180.
+    lat = lat * np.pi / 180.
+    x = np.cos(lat) * np.cos(lon)
+    y = np.cos(lat) * np.sin(lon)
+    z = np.sin(lat)
+
+    return x, y, z
+
 def main():
     plt.clf()
 
@@ -46,7 +55,7 @@ def main():
     df = json_normalize(data)
   
     #delete low confidence measurements
-    df = df.drop(df[df.cs == 0].index)
+    df = df.drop(df[pd.to_numeric(df.cs) < 20].index)
     df = df.drop(df[df[metric] == 0].index)
     df = df.dropna(subset=[metric])
 
@@ -60,35 +69,30 @@ def main():
     df[[metric]] = df[[metric]].apply(pd.to_numeric)
     df[['station.longitude']] = df[['station.longitude']].apply(pd.to_numeric)
     df[['station.latitude']] = df[['station.latitude']].apply(pd.to_numeric)
+    df[['cs']] = df[['cs']].apply(pd.to_numeric)
 
     df = df.dropna(subset=[metric])
-
-    df2 = df.copy()
-    df2.loc[df2['station.longitude'] > 180, 'station.longitude'] = df2['station.longitude'] - 360
-    df2.loc[df2['station.longitude'] > 0, 'station.longitude'] = df2['station.longitude'] + 360
-    df2['id'] = 0 - df2['id']
-    df = df.append(df2)
+    df.loc[df['station.longitude'] > 180, 'station.longitude'] = df['station.longitude'] - 360
 
     df.sort_values(by=['station.longitude'], inplace=True)
    
+    numcols, numrows = 180, 160
+    loni = np.linspace(-180, 180, numcols)
+    lati = np.linspace(-80, 80, numrows)
+    loni, lati = np.meshgrid(loni, lati)
+    x, y, z = sph_to_xyz(df['station.longitude'].values, df['station.latitude'].values)
+    t = df[metric].values
+    rbf = interpolate.Rbf(x, y, z, t, function='linear', smooth=0.25)
 
-    # grid data
-    
-    numcols, numrows = 100, 100
-    xi = np.linspace(-180, 180, numcols)
-    yi = np.linspace(-80, 80, numrows)
-    xi, yi = np.meshgrid(xi, yi)
-    # interpolate safe way with no extrapolation
-    x, y, z = df['station.longitude'].values, df['station.latitude'].values, df[metric].values
-    rbf = interpolate.Rbf(x, y, z, function='linear')
-    zi = rbf(xi, yi)
+    xi, yi, zi = sph_to_xyz(loni, lati)
+    zi = rbf(xi, yi, zi)
     
     #plot data
     
     fig = plt.figure(figsize=(16, 24))
     ax = plt.axes(projection=ccrs.PlateCarree())
     
-    mycontour = plt.contourf(xi, yi, zi, 16,
+    mycontour = plt.contourf(loni, lati, zi, 16,
                 cmap = plt.cm.get_cmap("viridis"),
                 transform=ccrs.PlateCarree(),
                 alpha=0.20)
