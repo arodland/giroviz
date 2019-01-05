@@ -129,7 +129,7 @@ def main():
 #        cell.set_linewidth(.25)
  
     plt.tight_layout()
-    plt.savefig('/output/{}.png'.format(metric), dpi=300,bbox_inches='tight')
+    plt.savefig('/output/{}.png'.format(metric), dpi=180,bbox_inches='tight')
     
     # Convert matplotlib contour to geojson
     geojsoncontour.contourf_to_geojson(
