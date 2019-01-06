@@ -102,15 +102,31 @@ def main():
     zi = np.zeros((len(phi),len(theta)))
     theta, phi = np.meshgrid(theta, phi)
 
+    df['pred'] = np.zeros(len(df))
+
     coeff_idx = 0
     for n in range(SPH_ORDER):
         for m in range(0-n,n+1):
             sh = scipy.special.sph_harm(m, n, theta, phi)
             print("sh:", sh)
             zi = zi + np.real(coeff[coeff_idx] * sh)
+            df['pred'] = df['pred'] + np.real(coeff[coeff_idx] * scipy.special.sph_harm(m, n, df['longitude_radians'].values, df['latitude_radians'].values))
             coeff_idx = coeff_idx + 1
 
+    df['residual'] = df[metric] - df['pred']
     #plot data
+    
+    loni = np.linspace(-180, 180, numcols)
+    lati = np.linspace(-80, 80, numrows)
+    loni, lati = np.meshgrid(loni, lati)
+    x, y, z = sph_to_xyz(df['station.longitude'].values, df['station.latitude'].values)
+    t = df['residual'].values
+    rbf = interpolate.Rbf(x, y, z, t, smooth=0.25)
+
+    xxi, yyi, zzi = sph_to_xyz(loni, lati)
+    resi = rbf(xxi, yyi, zzi)
+
+    zi = zi + resi
     
     fig = plt.figure(figsize=(16, 24))
     ax = plt.axes(projection=ccrs.PlateCarree())
