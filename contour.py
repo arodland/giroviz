@@ -15,7 +15,7 @@ from cartopy.feature.nightshade import Nightshade
 #from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 matplotlib.style.use('ggplot')
 from scipy import interpolate
-#import scipy
+import scipy
 import os
 import sys
 import logging
@@ -47,6 +47,8 @@ def sph_to_xyz(lon, lat):
     return x, y, z
 
 def main():
+    SPH_ORDER = 3
+
     plt.clf()
 
     with urllib.request.urlopen(os.getenv("METRICS_URI")) as url:
@@ -69,24 +71,45 @@ def main():
     df[[metric]] = df[[metric]].apply(pd.to_numeric)
     df[['station.longitude']] = df[['station.longitude']].apply(pd.to_numeric)
     df[['station.latitude']] = df[['station.latitude']].apply(pd.to_numeric)
+    df['longitude_radians'] = df['station.longitude'] * np.pi / 180.
+    df['latitude_radians'] = (df['station.latitude'] + 90) * np.pi / 180.
     df[['cs']] = df[['cs']].apply(pd.to_numeric)
 
     df = df.dropna(subset=[metric])
     df.loc[df['station.longitude'] > 180, 'station.longitude'] = df['station.longitude'] - 360
 
     df.sort_values(by=['station.longitude'], inplace=True)
+
+    sph = []
+    for n in range(SPH_ORDER):
+        for m in range(0-n,n+1):
+            sph.append(scipy.special.sph_harm(m, n, df['longitude_radians'].values, df['latitude_radians'].values).reshape((-1,1)))
+    sph = np.hstack(sph)
+    print(sph)
+
+    print(df[metric].values)
+    coeff = scipy.linalg.lstsq(sph, df[metric].values)[0]
+    print(coeff)
+
    
     numcols, numrows = 360, 160
     loni = np.linspace(-180, 180, numcols)
     lati = np.linspace(-80, 80, numrows)
-    loni, lati = np.meshgrid(loni, lati)
-    x, y, z = sph_to_xyz(df['station.longitude'].values, df['station.latitude'].values)
-    t = df[metric].values
-    rbf = interpolate.Rbf(x, y, z, t, function='linear', smooth=0.25)
 
-    xi, yi, zi = sph_to_xyz(loni, lati)
-    zi = rbf(xi, yi, zi)
-    
+    theta = loni * np.pi / 180.
+    phi = (lati + 90) * np.pi / 180.
+
+    zi = np.zeros((len(phi),len(theta)))
+    theta, phi = np.meshgrid(theta, phi)
+
+    coeff_idx = 0
+    for n in range(SPH_ORDER):
+        for m in range(0-n,n+1):
+            sh = scipy.special.sph_harm(m, n, theta, phi)
+            print("sh:", sh)
+            zi = zi + np.real(coeff[coeff_idx] * sh)
+            coeff_idx = coeff_idx + 1
+
     #plot data
     
     fig = plt.figure(figsize=(16, 24))
