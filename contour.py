@@ -48,6 +48,7 @@ def sph_to_xyz(lon, lat):
 
 def main():
     SPH_ORDER = 3
+    SPH_WEIGHT = 0.5
 
     plt.clf()
 
@@ -109,8 +110,8 @@ def main():
         for m in range(0-n,n+1):
             sh = scipy.special.sph_harm(m, n, theta, phi)
             print("sh:", sh)
-            zi = zi + np.real(coeff[coeff_idx] * sh)
-            df['pred'] = df['pred'] + np.real(coeff[coeff_idx] * scipy.special.sph_harm(m, n, df['longitude_radians'].values, df['latitude_radians'].values))
+            zi = zi + SPH_WEIGHT * np.real(coeff[coeff_idx] * sh)
+            df['pred'] = df['pred'] + SPH_WEIGHT * np.real(coeff[coeff_idx] * scipy.special.sph_harm(m, n, df['longitude_radians'].values, df['latitude_radians'].values))
             coeff_idx = coeff_idx + 1
 
     df['residual'] = df[metric] - df['pred']
