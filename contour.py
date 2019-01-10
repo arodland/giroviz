@@ -92,7 +92,12 @@ def main():
     fig = plt.figure(figsize=(16, 24))
     ax = plt.axes(projection=ccrs.PlateCarree())
     
-    mycontour = plt.contourf(loni, lati, zi, 16,
+    levels = 16
+
+    if metric == 'mufd':
+        levels = [3, 3.5, 4, 4.6, 5.3, 6.1, 7, 8.2, 9.5, 11, 12.6, 14.6, 16.9, 19.5, 22.6, 26, 30]
+
+    mycontour = plt.contourf(loni, lati, zi, levels,
                 cmap = plt.cm.get_cmap("viridis"),
                 transform=ccrs.PlateCarree(),
                 alpha=0.20)
