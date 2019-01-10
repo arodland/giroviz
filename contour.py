@@ -93,14 +93,21 @@ def main():
     ax = plt.axes(projection=ccrs.PlateCarree())
     
     levels = 16
+    contour_args = {}
+    cmap = plt.cm.get_cmap('viridis')
+    cmap.set_under(cmap(0))
+    cmap.set_over(cmap(1))
 
     if metric == 'mufd':
         levels = [3, 3.5, 4, 4.6, 5.3, 6.1, 7, 8.2, 9.5, 11, 12.6, 14.6, 16.9, 19.5, 22.6, 26, 30]
+        contour_args['norm'] = matplotlib.colors.LogNorm(3,30, clip=False)
 
     mycontour = plt.contourf(loni, lati, zi, levels,
-                cmap = plt.cm.get_cmap("viridis"),
+                cmap=cmap,
                 transform=ccrs.PlateCarree(),
-                alpha=0.20)
+                alpha=0.20,
+                **contour_args
+                )
     
     ax.add_feature(cartopy.feature.LAND)
     ax.set_global()
@@ -120,7 +127,7 @@ def main():
     CS2 = plt.contour(mycontour, linewidths=.5, levels=mycontour.levels[1::1])
     
     # Make a colorbar for the ContourSet returned by the contourf call.
-    cbar = plt.colorbar(mycontour, fraction=0.03, orientation='horizontal', pad=0.02)
+    cbar = plt.colorbar(mycontour, fraction=0.03, orientation='horizontal', pad=0.02, format=matplotlib.ticker.ScalarFormatter())
     #cbar.set_label('MHz') #TODO add unit
     cbar.add_lines(CS2)
     
