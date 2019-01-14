@@ -100,7 +100,7 @@ def main():
 
     if metric == 'mufd':
         levels = [3, 3.5, 4, 4.6, 5.3, 6.1, 7, 8.2, 9.5, 11, 12.6, 14.6, 16.9, 19.5, 22.6, 26, 30]
-        contour_args['norm'] = matplotlib.colors.LogNorm(3,30, clip=False)
+        contour_args['norm'] = matplotlib.colors.LogNorm(3.5,30, clip=False)
 
     mycontour = plt.contourf(loni, lati, zi, levels,
                 cmap=cmap,
