@@ -148,6 +148,7 @@ def main():
     plt.savefig('/output/{}.png'.format(metric), dpi=180,bbox_inches='tight')
     
     # Convert matplotlib contour to geojson
+    """
     geojsoncontour.contourf_to_geojson(
         contourf=mycontour,
         geojson_filepath='/output/{}.geojson'.format(metric),
@@ -156,6 +157,7 @@ def main():
         stroke_width=2,
         fill_opacity=0.5,
         )
+    """
 
 
 if __name__ == '__main__':
