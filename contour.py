@@ -105,7 +105,7 @@ def main():
     mycontour = plt.contourf(loni, lati, zi, levels,
                 cmap=cmap,
                 transform=ccrs.PlateCarree(),
-                alpha=0.20,
+                alpha=0.3,
                 **contour_args
                 )
     
@@ -122,9 +122,9 @@ def main():
       lat = float(row['station.latitude'])
       ax.text(lon, lat, int(row[metric]), fontsize=10,ha='left', transform=ccrs.PlateCarree()) 
     
-    plt.clabel(mycontour, inline=0, fontsize=10, fmt='%.0f')
-    
-    CS2 = plt.contour(mycontour, linewidths=.5, levels=mycontour.levels[1::1])
+#    plt.clabel(mycontour, inline=False, colors='black', fontsize=10, fmt='%.0f')
+
+    CS2 = plt.contour(mycontour, linewidths=.5, alpha=0.66, levels=mycontour.levels[1::1])
     
     # Make a colorbar for the ContourSet returned by the contourf call.
     cbar = plt.colorbar(mycontour, fraction=0.03, orientation='horizontal', pad=0.02, format=matplotlib.ticker.ScalarFormatter())
