@@ -94,9 +94,9 @@ def main():
     print(coeff)
 
    
-    numcols, numrows = 360, 160
+    numcols, numrows = 360, 180
     loni = np.linspace(-180, 180, numcols)
-    lati = np.linspace(-80, 80, numrows)
+    lati = np.linspace(-90, 90, numrows)
 
     theta = loni * np.pi / 180.
     phi = (lati + 90) * np.pi / 180.
@@ -120,7 +120,7 @@ def main():
     #plot data
     
     loni = np.linspace(-180, 180, numcols)
-    lati = np.linspace(-80, 80, numrows)
+    lati = np.linspace(-90, 90, numrows)
     loni, lati = np.meshgrid(loni, lati)
     x, y, z = sph_to_xyz(df['station.longitude'].values, df['station.latitude'].values)
     t = df['residual'].values
