@@ -48,8 +48,8 @@ def sph_to_xyz(lon, lat):
 
 def main():
     SPH_ORDER = 3
-    SPH_WEIGHT = 0.75
-    RESIDUAL_WEIGHT = 1
+    SPH_WEIGHT = 0.5
+    RESIDUAL_WEIGHT = 0.9
 
     plt.clf()
 
@@ -124,7 +124,7 @@ def main():
     loni, lati = np.meshgrid(loni, lati)
     x, y, z = sph_to_xyz(df['station.longitude'].values, df['station.latitude'].values)
     t = df['residual'].values
-    rbf = interpolate.Rbf(x, y, z, t, smooth=0.25)
+    rbf = interpolate.Rbf(x, y, z, t, smooth=1, function='linear')
 
     xxi, yyi, zzi = sph_to_xyz(loni, lati)
     resi = rbf(xxi, yyi, zzi)
