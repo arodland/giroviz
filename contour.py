@@ -76,6 +76,7 @@ def main():
     df['longitude_radians'] = df['station.longitude'] * np.pi / 180.
     df['latitude_radians'] = (df['station.latitude'] + 90) * np.pi / 180.
     df[['cs']] = df[['cs']].apply(pd.to_numeric)
+    df['transformed'] = np.log(df[metric])
 
     df = df.dropna(subset=[metric])
     df.loc[df['station.longitude'] > 180, 'station.longitude'] = df['station.longitude'] - 360
@@ -89,8 +90,7 @@ def main():
     sph = np.hstack(sph)
     print(sph)
 
-    print(df[metric].values)
-    coeff = scipy.linalg.lstsq(sph, df[metric].values)[0]
+    coeff = scipy.linalg.lstsq(sph, df['transformed'].values)[0]
     print(coeff)
 
    
@@ -116,7 +116,7 @@ def main():
             df['pred'] = df['pred'] + weight * np.real(coeff[coeff_idx] * scipy.special.sph_harm(m, n, df['longitude_radians'].values, df['latitude_radians'].values))
             coeff_idx = coeff_idx + 1
 
-    df['residual'] = df[metric] - df['pred']
+    df['residual'] = df['transformed'] - df['pred']
     #plot data
     
     loni = np.linspace(-180, 180, numcols)
@@ -124,12 +124,13 @@ def main():
     loni, lati = np.meshgrid(loni, lati)
     x, y, z = sph_to_xyz(df['station.longitude'].values, df['station.latitude'].values)
     t = df['residual'].values
-    rbf = interpolate.Rbf(x, y, z, t, smooth=1, function='linear')
+    rbf = interpolate.Rbf(x, y, z, t, smooth=0.75, function='linear')
 
     xxi, yyi, zzi = sph_to_xyz(loni, lati)
     resi = rbf(xxi, yyi, zzi)
 
     zi = zi + RESIDUAL_WEIGHT * resi
+    zi = np.exp(zi)
     
     fig = plt.figure(figsize=(16, 24))
     ax = plt.axes(projection=ccrs.PlateCarree())
