@@ -76,7 +76,7 @@ def main():
 
     df.sort_values(by=['station.longitude'], inplace=True)
    
-    numcols, numrows = 180, 160
+    numcols, numrows = 360, 160
     loni = np.linspace(-180, 180, numcols)
     lati = np.linspace(-80, 80, numrows)
     loni, lati = np.meshgrid(loni, lati)
