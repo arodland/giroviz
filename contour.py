@@ -109,7 +109,12 @@ def main():
                 **contour_args
                 )
     
-    ax.add_feature(cartopy.feature.LAND)
+    ax.add_feature(cartopy.feature.NaturalEarthFeature('physical', 'land', '110m',
+        edgecolor='face',
+        facecolor=np.array((0xdd,0xdd,0xcc))/256.,
+        zorder=-1
+        )
+        )
     ax.set_global()
     ax.add_feature(Nightshade(date, alpha=0.08))
 
