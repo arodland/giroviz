@@ -22,6 +22,9 @@ import logging
 import urllib.request, json
 from pandas.io.json import json_normalize
 import geojsoncontour
+import statsmodels
+import statsmodels.api as sm
+
 
 metric = sys.argv[1]
 
@@ -80,6 +83,8 @@ def main():
 
     df = df.dropna(subset=[metric])
     df.loc[df['station.longitude'] > 180, 'station.longitude'] = df['station.longitude'] - 360
+    df.loc[df['cs'] == -1, 'cs'] = 80
+    df[['cs']] = df[['cs']] / 100.
 
     df.sort_values(by=['station.longitude'], inplace=True)
 
@@ -88,10 +93,10 @@ def main():
         for m in range(0-n,n+1):
             sph.append(scipy.special.sph_harm(m, n, df['longitude_radians'].values, df['latitude_radians'].values).reshape((-1,1)))
     sph = np.hstack(sph)
-    print(sph)
 
-    coeff = scipy.linalg.lstsq(sph, df['transformed'].values)[0]
-    print(coeff)
+    wls_model = sm.WLS(df['transformed'].values, sph, df['cs'].values)
+    wls_result = wls_model.fit()
+    coeff = wls_result.params
 
    
     numcols, numrows = 360, 180
@@ -110,7 +115,6 @@ def main():
     for n in range(SPH_ORDER):
         for m in range(0-n,n+1):
             sh = scipy.special.sph_harm(m, n, theta, phi)
-            print("sh:", sh)
             weight = 1 if n == 0 else SPH_WEIGHT
             zi = zi + weight * np.real(coeff[coeff_idx] * sh)
             df['pred'] = df['pred'] + weight * np.real(coeff[coeff_idx] * scipy.special.sph_harm(m, n, df['longitude_radians'].values, df['latitude_radians'].values))
