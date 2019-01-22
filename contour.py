@@ -102,14 +102,16 @@ def main():
     df.sort_values(by=['station.longitude'], inplace=True)
 
     sph = []
+    alpha = []
     for n in range(SPH_ORDER):
         for m in range(0-n,n+1):
             sph.append(real_sph(m, n, df['longitude_radians'].values, df['latitude_radians'].values).reshape((-1,1)))
+            alpha.append(0 if n == 0 else 0.01)
 
     sph = np.hstack(sph)
 
     wls_model = sm.WLS(df['transformed'].values, sph, df['cs'].values)
-    wls_result = wls_model.fit()
+    wls_result = wls_model.fit_regularized(alpha=np.array(alpha))
     coeff = wls_result.params
 
     numcols, numrows = 360, 180
@@ -153,7 +155,7 @@ def main():
     resi = resi.reshape(xxi.shape)
     sd = sd.reshape(xxi.shape)
 
-#    zi = zi + RESIDUAL_WEIGHT * resi
+    zi = zi + RESIDUAL_WEIGHT * resi
     zi = np.exp(zi)
     
     fig = plt.figure(figsize=(16, 24))
