@@ -130,12 +130,15 @@ def main():
     t = df['residual'].values
 
     stdev = 1.1 - df['cs']
-    I = rbf.interpolate.RBFInterpolant(np.vstack((x,y,z)).T, t, stdev, basis=rbf.basis.ga, eps=0.8, extrapolate=True)
+
+    gp = rbf.gauss.gpiso(rbf.basis.se, (0.0, 1.0, 1.0))
+    gp_cond = gp.condition(np.vstack((x,y,z)).T, t, sigma=stdev)
 
     xxi, yyi, zzi = sph_to_xyz(loni, lati)
     xyz = np.array([xxi.flatten(), yyi.flatten(), zzi.flatten()]).T
-    resi = I(xyz)
+    resi, sd = gp_cond.meansd(xyz)
     resi = resi.reshape(xxi.shape)
+    sd = sd.reshape(xxi.shape)
 
     zi = zi + RESIDUAL_WEIGHT * resi
     zi = np.exp(zi)
