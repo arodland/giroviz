@@ -49,6 +49,19 @@ def sph_to_xyz(lon, lat):
 
     return x, y, z
 
+def real_sph(m, n, theta, phi):
+    if m == 0:
+        return np.real(scipy.special.sph_harm(m, n, theta, phi))
+    else:
+        harm = scipy.special.sph_harm(abs(m), n, theta, phi)
+        if m > 0:
+            harm = np.real(harm)
+        else:
+            harm = np.imag(harm)
+
+        odd_even = -1 if m % 2 else 1
+        return np.sqrt(2) * odd_even * harm
+
 def main():
     SPH_ORDER = 3
     SPH_WEIGHT = 0.5
@@ -92,8 +105,8 @@ def main():
     alpha = []
     for n in range(SPH_ORDER):
         for m in range(0-n,n+1):
-            sph.append(scipy.special.sph_harm(m, n, df['longitude_radians'].values, df['latitude_radians'].values).reshape((-1,1)))
-            alpha.append(0 if n == 0 else 0.1)
+            sph.append(real_sph(m, n, df['longitude_radians'].values, df['latitude_radians'].values).reshape((-1,1)))
+            alpha.append(0 if n == 0 else 0.01)
 
     sph = np.hstack(sph)
 
@@ -101,7 +114,6 @@ def main():
     wls_result = wls_model.fit_regularized(alpha=np.array(alpha))
     coeff = wls_result.params
 
-   
     numcols, numrows = 360, 180
     loni = np.linspace(-180, 180, numcols)
     lati = np.linspace(-90, 90, numrows)
@@ -117,10 +129,10 @@ def main():
     coeff_idx = 0
     for n in range(SPH_ORDER):
         for m in range(0-n,n+1):
-            sh = scipy.special.sph_harm(m, n, theta, phi)
+            sh = real_sph(m, n, theta, phi)
             weight = 1 if n == 0 else SPH_WEIGHT
-            zi = zi + weight * np.real(coeff[coeff_idx] * sh)
-            df['pred'] = df['pred'] + weight * np.real(coeff[coeff_idx] * scipy.special.sph_harm(m, n, df['longitude_radians'].values, df['latitude_radians'].values))
+            zi = zi + weight * coeff[coeff_idx] * sh
+            df['pred'] = df['pred'] + weight * np.real(coeff[coeff_idx] * real_sph(m, n, df['longitude_radians'].values, df['latitude_radians'].values))
             coeff_idx = coeff_idx + 1
 
     df['residual'] = df['transformed'] - df['pred']
