@@ -208,6 +208,7 @@ def main():
  
     plt.tight_layout()
     plt.savefig('/output/{}.png'.format(metric), dpi=180,bbox_inches='tight')
+    plt.savefig('/output/{}.svg'.format(metric), dpi=180,bbox_inches='tight')
     
     # Convert matplotlib contour to geojson
     """
