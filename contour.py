@@ -172,7 +172,7 @@ def main():
     for index, row in df.iterrows():
       lon = float(row['station.longitude'])
       lat = float(row['station.latitude'])
-      ax.text(lon, lat, int(row[metric]), fontsize=10,ha='left', transform=ccrs.PlateCarree()) 
+      ax.text(lon, lat, int(row[metric] + 0.5), fontsize=10,ha='left', transform=ccrs.PlateCarree(), alpha=(0.25 + 0.75 * row['cs']))
     
 #    plt.clabel(mycontour, inline=False, colors='black', fontsize=10, fmt='%.0f')
 
