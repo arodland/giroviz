@@ -89,13 +89,16 @@ def main():
     df.sort_values(by=['station.longitude'], inplace=True)
 
     sph = []
+    alpha = []
     for n in range(SPH_ORDER):
         for m in range(0-n,n+1):
             sph.append(scipy.special.sph_harm(m, n, df['longitude_radians'].values, df['latitude_radians'].values).reshape((-1,1)))
+            alpha.append(0 if n == 0 else 0.1)
+
     sph = np.hstack(sph)
 
     wls_model = sm.WLS(df['transformed'].values, sph, df['cs'].values)
-    wls_result = wls_model.fit()
+    wls_result = wls_model.fit_regularized(alpha=np.array(alpha))
     coeff = wls_result.params
 
    
