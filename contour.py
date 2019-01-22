@@ -14,7 +14,6 @@ import cartopy.feature
 from cartopy.feature.nightshade import Nightshade
 #from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 matplotlib.style.use('ggplot')
-from scipy import interpolate
 import scipy
 import os
 import sys
@@ -22,6 +21,10 @@ import logging
 import urllib.request, json
 from pandas.io.json import json_normalize
 import geojsoncontour
+import statsmodels
+import statsmodels.api as sm
+import rbf
+
 
 metric = sys.argv[1]
 
@@ -80,18 +83,23 @@ def main():
 
     df = df.dropna(subset=[metric])
     df.loc[df['station.longitude'] > 180, 'station.longitude'] = df['station.longitude'] - 360
+    df.loc[df['cs'] == -1, 'cs'] = 80
+    df[['cs']] = df[['cs']] / 100.
 
     df.sort_values(by=['station.longitude'], inplace=True)
 
     sph = []
+    alpha = []
     for n in range(SPH_ORDER):
         for m in range(0-n,n+1):
             sph.append(scipy.special.sph_harm(m, n, df['longitude_radians'].values, df['latitude_radians'].values).reshape((-1,1)))
-    sph = np.hstack(sph)
-    print(sph)
+            alpha.append(0 if n == 0 else 0.1)
 
-    coeff = scipy.linalg.lstsq(sph, df['transformed'].values)[0]
-    print(coeff)
+    sph = np.hstack(sph)
+
+    wls_model = sm.WLS(df['transformed'].values, sph, df['cs'].values)
+    wls_result = wls_model.fit_regularized(alpha=np.array(alpha))
+    coeff = wls_result.params
 
    
     numcols, numrows = 360, 180
@@ -110,7 +118,6 @@ def main():
     for n in range(SPH_ORDER):
         for m in range(0-n,n+1):
             sh = scipy.special.sph_harm(m, n, theta, phi)
-            print("sh:", sh)
             weight = 1 if n == 0 else SPH_WEIGHT
             zi = zi + weight * np.real(coeff[coeff_idx] * sh)
             df['pred'] = df['pred'] + weight * np.real(coeff[coeff_idx] * scipy.special.sph_harm(m, n, df['longitude_radians'].values, df['latitude_radians'].values))
@@ -124,10 +131,17 @@ def main():
     loni, lati = np.meshgrid(loni, lati)
     x, y, z = sph_to_xyz(df['station.longitude'].values, df['station.latitude'].values)
     t = df['residual'].values
-    rbf = interpolate.Rbf(x, y, z, t, smooth=0.75, function='linear')
+
+    stdev = 1.1 - df['cs']
+
+    gp = rbf.gauss.gpiso(rbf.basis.se, (0.0, 1.0, 0.8))
+    gp_cond = gp.condition(np.vstack((x,y,z)).T, t, sigma=stdev)
 
     xxi, yyi, zzi = sph_to_xyz(loni, lati)
-    resi = rbf(xxi, yyi, zzi)
+    xyz = np.array([xxi.flatten(), yyi.flatten(), zzi.flatten()]).T
+    resi, sd = gp_cond.meansd(xyz)
+    resi = resi.reshape(xxi.shape)
+    sd = sd.reshape(xxi.shape)
 
     zi = zi + RESIDUAL_WEIGHT * resi
     zi = np.exp(zi)
@@ -168,7 +182,7 @@ def main():
     for index, row in df.iterrows():
       lon = float(row['station.longitude'])
       lat = float(row['station.latitude'])
-      ax.text(lon, lat, int(row[metric]), fontsize=10,ha='left', transform=ccrs.PlateCarree()) 
+      ax.text(lon, lat, int(row[metric] + 0.5), fontsize=10,ha='left', transform=ccrs.PlateCarree(), alpha=(0.25 + 0.75 * row['cs']))
     
 #    plt.clabel(mycontour, inline=False, colors='black', fontsize=10, fmt='%.0f')
 
