@@ -131,7 +131,7 @@ def main():
 
     stdev = 1.1 - df['cs']
 
-    gp = rbf.gauss.gpiso(rbf.basis.se, (0.0, 1.0, 1.0))
+    gp = rbf.gauss.gpiso(rbf.basis.se, (0.0, 1.0, 0.8))
     gp_cond = gp.condition(np.vstack((x,y,z)).T, t, sigma=stdev)
 
     xxi, yyi, zzi = sph_to_xyz(loni, lati)
