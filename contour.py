@@ -14,7 +14,6 @@ import cartopy.feature
 from cartopy.feature.nightshade import Nightshade
 #from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 matplotlib.style.use('ggplot')
-from scipy import interpolate
 import scipy
 import os
 import sys
@@ -24,6 +23,7 @@ from pandas.io.json import json_normalize
 import geojsoncontour
 import statsmodels
 import statsmodels.api as sm
+import rbf
 
 
 metric = sys.argv[1]
@@ -128,10 +128,14 @@ def main():
     loni, lati = np.meshgrid(loni, lati)
     x, y, z = sph_to_xyz(df['station.longitude'].values, df['station.latitude'].values)
     t = df['residual'].values
-    rbf = interpolate.Rbf(x, y, z, t, smooth=0.75, function='linear')
+
+    stdev = 1.1 - df['cs']
+    I = rbf.interpolate.RBFInterpolant(np.vstack((x,y,z)).T, t, stdev, basis=rbf.basis.ga, eps=0.8, extrapolate=True)
 
     xxi, yyi, zzi = sph_to_xyz(loni, lati)
-    resi = rbf(xxi, yyi, zzi)
+    xyz = np.array([xxi.flatten(), yyi.flatten(), zzi.flatten()]).T
+    resi = I(xyz)
+    resi = resi.reshape(xxi.shape)
 
     zi = zi + RESIDUAL_WEIGHT * resi
     zi = np.exp(zi)
