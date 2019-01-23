@@ -162,20 +162,21 @@ def main():
     ax = plt.axes(projection=ccrs.PlateCarree())
     
     levels = 16
-    contour_args = {}
     cmap = plt.cm.get_cmap('viridis')
-    cmap.set_under(cmap(0))
-    cmap.set_over(cmap(1))
+    cmap.set_under(cmap(1e-5))
+    cmap.set_over(cmap(1 - 1e-5))
+    norm = matplotlib.colors.Normalize(clip=False)
 
     if metric == 'mufd':
         levels = [3, 3.5, 4, 4.6, 5.3, 6.1, 7, 8.2, 9.5, 11, 12.6, 14.6, 16.9, 19.5, 22.6, 26, 30]
-        contour_args['norm'] = matplotlib.colors.LogNorm(3.5,30, clip=False)
+        norm = matplotlib.colors.LogNorm(3.5,30, clip=False)
 
     mycontour = plt.contourf(loni, lati, zi, levels,
                 cmap=cmap,
+                extend='both',
                 transform=ccrs.PlateCarree(),
                 alpha=0.3,
-                **contour_args
+                norm=norm
                 )
     
     ax.add_feature(cartopy.feature.NaturalEarthFeature('physical', 'land', '110m',
@@ -194,11 +195,30 @@ def main():
     for index, row in df.iterrows():
       lon = float(row['station.longitude'])
       lat = float(row['station.latitude'])
-      ax.text(lon, lat, int(row[metric] + 0.5), fontsize=10,ha='left', transform=ccrs.PlateCarree(), alpha=(0.25 + 0.75 * row['cs']))
+      alpha = 0.2 + 0.6 * row['cs']
+      ax.text(lon, lat, int(row[metric] + 0.5),
+              fontsize=9,
+              ha='left',
+              transform=ccrs.PlateCarree(),
+              alpha=alpha,
+              bbox={
+                  'boxstyle': 'circle',
+                  'alpha': alpha - 0.1,
+                  'color': cmap(norm(row[metric])),
+                  'mutation_scale': 0.5,
+                  }
+              )
     
-#    plt.clabel(mycontour, inline=False, colors='black', fontsize=10, fmt='%.0f')
-
     CS2 = plt.contour(mycontour, linewidths=.5, alpha=0.66, levels=mycontour.levels[1::1])
+
+    prev = None
+    levels = []
+    for lev in CS2.levels:
+        if prev is None or '%.0f'%(lev) != '%.0f'%(prev):
+            levels.append(lev)
+            prev = lev
+
+    plt.clabel(CS2, levels, inline=True, fontsize=10, fmt='%.0f', use_clabeltext=True )
     
     # Make a colorbar for the ContourSet returned by the contourf call.
     cbar = plt.colorbar(mycontour, fraction=0.03, orientation='horizontal', pad=0.02, format=matplotlib.ticker.ScalarFormatter())
