@@ -65,7 +65,7 @@ def real_sph(m, n, theta, phi):
 def main():
     SPH_ORDER = 3
     SPH_WEIGHT = 0.5
-    RESIDUAL_WEIGHT = 0.9
+    RESIDUAL_WEIGHT = 1
 
     plt.clf()
 
