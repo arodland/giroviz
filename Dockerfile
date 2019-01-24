@@ -21,4 +21,4 @@ WORKDIR /src/RBF
 RUN python setup.py install
 
 WORKDIR /
-COPY contour.py /
+COPY contour*.py /

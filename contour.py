@@ -92,12 +92,12 @@ def main():
     df['longitude_radians'] = df['station.longitude'] * np.pi / 180.
     df['latitude_radians'] = (df['station.latitude'] + 90) * np.pi / 180.
     df[['cs']] = df[['cs']].apply(pd.to_numeric)
+    df.loc[df['cs'] == -1, 'cs'] = 80
+    df[['cs']] = df[['cs']] / 100.
     df['transformed'] = np.log(df[metric])
 
     df = df.dropna(subset=[metric])
     df.loc[df['station.longitude'] > 180, 'station.longitude'] = df['station.longitude'] - 360
-    df.loc[df['cs'] == -1, 'cs'] = 80
-    df[['cs']] = df[['cs']] / 100.
 
     df.sort_values(by=['station.longitude'], inplace=True)
 
@@ -106,8 +106,7 @@ def main():
     for n in range(SPH_ORDER):
         for m in range(0-n,n+1):
             sph.append(real_sph(m, n, df['longitude_radians'].values, df['latitude_radians'].values).reshape((-1,1)))
-            alpha.append(0 if n == 0 else 0.01)
-
+            alpha.append(0 if n == 0 else 0.005)
     sph = np.hstack(sph)
 
     wls_model = sm.WLS(df['transformed'].values, sph, df['cs'].values)
@@ -138,15 +137,13 @@ def main():
     df['residual'] = df['transformed'] - df['pred']
     #plot data
     
-    loni = np.linspace(-180, 180, numcols)
-    lati = np.linspace(-90, 90, numrows)
     loni, lati = np.meshgrid(loni, lati)
     x, y, z = sph_to_xyz(df['station.longitude'].values, df['station.latitude'].values)
     t = df['residual'].values
 
-    stdev = 1.1 - df['cs']
+    stdev = 0.7 - 0.5 * df['cs']
 
-    gp = rbf.gauss.gpiso(rbf.basis.se, (0.0, 1.0, 0.8))
+    gp = rbf.gauss.gpiso(rbf.basis.se, (0.0, 0.7, 0.8))
     gp_cond = gp.condition(np.vstack((x,y,z)).T, t, sigma=stdev)
 
     xxi, yyi, zzi = sph_to_xyz(loni, lati)
