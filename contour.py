@@ -64,8 +64,8 @@ def real_sph(m, n, theta, phi):
 
 def main():
     SPH_ORDER = 3
-    SPH_WEIGHT = 0.5
-    RESIDUAL_WEIGHT = 1
+    SPH_WEIGHT = 0.8
+    RESIDUAL_WEIGHT = 0.9
 
     plt.clf()
 
@@ -110,7 +110,7 @@ def main():
     sph = np.hstack(sph)
 
     wls_model = sm.WLS(df['transformed'].values, sph, df['cs'].values)
-    wls_result = wls_model.fit_regularized(alpha=np.array(alpha))
+    wls_result = wls_model.fit_regularized(alpha=np.array(alpha), L1_wt = 0.6)
     coeff = wls_result.params
 
     numcols, numrows = 360, 180
