@@ -5,6 +5,7 @@ import sys
 import numpy as np
 from models import GP3DModel, IRISplineModel, HybridModel, LogSpaceModel, ProductModel
 from plot import Plot
+import statsmodels.api as sm
 
 metric = sys.argv[1]
 
@@ -29,7 +30,20 @@ error = pred - df[metric].values
 print(df[metric].values)
 print(pred)
 print(error)
-print(np.sqrt(np.mean(error ** 2)))
+print(np.sqrt(np.mean(error ** 2)), np.mean(error))
+
+if metric in ['mufd', 'fof2']:
+    wls_model = sm.WLS(df[metric].values, pred, df.cs.values)
+    wls_fit = wls_model.fit()
+    coeff = wls_fit.params
+    print(coeff[0])
+
+    pred = pred * coeff[0]
+    error = pred - df[metric].values
+    print(df[metric].values)
+    print(pred)
+    print(error)
+    print(np.sqrt(np.mean(error ** 2)), np.mean(error))
 
 gp3dmodel = GP3DModel()
 gp3dmodel.train(df, np.log(df[metric].values) - np.log(pred))
@@ -40,7 +54,7 @@ error = pred - df[metric].values
 print(df[metric].values)
 print(pred)
 print(error)
-print(np.sqrt(np.mean(error ** 2)))
+print(np.sqrt(np.mean(error ** 2)), np.mean(error))
 
 plt = Plot(metric, dt.datetime.now(timezone.utc))
 if metric == 'mufd':
