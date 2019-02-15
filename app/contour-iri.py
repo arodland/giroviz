@@ -30,7 +30,7 @@ error = pred - df[metric].values
 print(df[metric].values)
 print(pred)
 print(error)
-print(np.sqrt(np.mean(error ** 2)), np.mean(error))
+print(np.sqrt(np.sum(error ** 2) / np.sum(df.cs.values)), np.sum(error) / np.sum(df.cs.values))
 
 if metric in ['mufd', 'fof2']:
     wls_model = sm.WLS(df[metric].values, pred, df.cs.values)
@@ -43,7 +43,7 @@ if metric in ['mufd', 'fof2']:
     print(df[metric].values)
     print(pred)
     print(error)
-    print(np.sqrt(np.mean(error ** 2)), np.mean(error))
+    print(np.sqrt(np.sum(error ** 2) / np.sum(df.cs.values)), np.sum(error) / np.sum(df.cs.values))
 
 gp3dmodel = GP3DModel()
 gp3dmodel.train(df, np.log(df[metric].values) - np.log(pred))
@@ -54,7 +54,7 @@ error = pred - df[metric].values
 print(df[metric].values)
 print(pred)
 print(error)
-print(np.sqrt(np.mean(error ** 2)), np.mean(error))
+print(np.sqrt(np.sum(error ** 2) / np.sum(df.cs.values)), np.sum(error) / np.sum(df.cs.values))
 
 plt = Plot(metric, dt.datetime.now(timezone.utc))
 if metric == 'mufd':
