@@ -8,9 +8,9 @@ class IRISplineModel:
 
     def train(self, metric):
         data = pd.read_fwf(self.filename, sep='\s+', header=None, names=["lat", "lon", "nmf2", "fof2", "md", "mufd"])
-        z = data[metric].values.reshape((46, 91))
-        lat = np.linspace(-90, 90, 46)
-        lon = np.linspace(-180, 180, 91)
+        z = data[metric].values.reshape((181,361))
+        lat = np.linspace(-90, 90, 181)
+        lon = np.linspace(-180, 180, 361)
         self.spline = RectBivariateSpline(lat, lon, z)
 
     def predict(self, longitude, latitude, weight=None):
