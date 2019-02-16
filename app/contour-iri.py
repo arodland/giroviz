@@ -3,7 +3,7 @@ import datetime as dt
 from datetime import timezone
 import sys
 import numpy as np
-from models import GP3DModel, IRISplineModel, HybridModel, LogSpaceModel, ProductModel
+from models import GP3DModel, IRISplineModel, HybridModel, LogSpaceModel, LinearModel, ProductModel
 from plot import Plot
 import statsmodels.api as sm
 
@@ -33,12 +33,13 @@ print(error)
 print(np.sqrt(np.sum(error ** 2) / np.sum(df.cs.values)), np.sum(error) / np.sum(df.cs.values))
 
 if metric in ['mufd', 'fof2']:
-    wls_model = sm.WLS(df[metric].values, pred, df.cs.values)
+    wls_model = sm.WLS(df[metric].values, np.vstack((pred.T, np.ones(len(df[metric].values)))).T, df.cs.values)
     wls_fit = wls_model.fit()
     coeff = wls_fit.params
-    print(coeff[0])
+    print(coeff)
 
-    pred = pred * coeff[0]
+    irimodel = LinearModel(irimodel, coeff[0], coeff[1])
+    pred = irimodel.predict(df['station.longitude'].values, df['station.latitude'].values)
     error = pred - df[metric].values
     print(df[metric].values)
     print(pred)

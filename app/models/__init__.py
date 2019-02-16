@@ -4,3 +4,4 @@ from .logspace import LogSpaceModel
 from .product import ProductModel
 from .sph import SPHModel
 from .irispline import IRISplineModel
+from .linear import LinearModel
