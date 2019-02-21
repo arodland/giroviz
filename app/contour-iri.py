@@ -46,7 +46,7 @@ if metric in ['mufd', 'fof2']:
     print(error)
     print(np.sqrt(np.sum(error ** 2) / np.sum(df.cs.values)), np.sum(error) / np.sum(df.cs.values))
 
-gp3dmodel = GP3DModel()
+gp3dmodel = GP3DModel(se_params=(0.0, 0.7, 0.6))
 gp3dmodel.train(df, np.log(df[metric].values) - np.log(pred))
 
 model = ProductModel(irimodel, LogSpaceModel(gp3dmodel))
