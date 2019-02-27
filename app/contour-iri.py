@@ -16,11 +16,6 @@ df = data.filter(df,
         min_confidence = 0.01
         )
 
-#model = LogSpaceModel(
-#        HybridModel(SPHModel(), 0.8, GP3DModel(), 0.9)
-#    )
-
-#model.train(df, df[metric].values)
 irimodel = IRISplineModel("/iri.latest")
 irimodel.train(metric)
 
