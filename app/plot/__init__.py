@@ -43,7 +43,7 @@ class Plot:
         self.levels = [3, 3.5, 4, 4.6, 5.3, 6.1, 7, 8.2, 9.5, 11, 12.6, 14.6, 16.9, 19.5, 22.6, 26, 30]
         self.norm = matplotlib.colors.LogNorm(3.5, 30, clip=False)
 
-    def draw_contour(self, model, lon_min=-180, lon_max=180, lon_steps=360, lat_min=-90, lat_max=90, lat_steps=180):
+    def draw_contour(self, model, lon_min=-180, lon_max=180, lon_steps=361, lat_min=-90, lat_max=90, lat_steps=181):
         loni = np.linspace(lon_min, lon_max, lon_steps)
         lati = np.linspace(lat_min, lat_max, lat_steps)
         loni, lati = np.meshgrid(loni, lati)

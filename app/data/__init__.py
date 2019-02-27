@@ -37,4 +37,7 @@ def filter(df, max_age=None, required_metrics=[], min_confidence=None):
 
     df = df.dropna(subset=required_metrics)
 
+    for metric in required_metrics:
+        df = df.drop(df[df[metric] == 0.].index)
+
     return df
