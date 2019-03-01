@@ -12,6 +12,7 @@ def sph_to_xyz(lon, lat):
 
 class GP3DModel:
     def __init__(self):
+        pass
 
     def train(self, df, t):
         x, y, z = sph_to_xyz(df['station.longitude'].values, df['station.latitude'].values)
