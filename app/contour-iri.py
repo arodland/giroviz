@@ -3,7 +3,7 @@ import datetime as dt
 from datetime import timezone
 import sys
 import numpy as np
-from models import GP3DModel, IRISplineModel, HybridModel, LogSpaceModel, LinearModel, ProductModel
+from models import GP3DModel, IRISplineModel, HybridModel, LogSpaceModel, LinearModel, ProductModel, DifferenceModel
 from plot import Plot
 import statsmodels.api as sm
 
@@ -26,6 +26,8 @@ print(df[metric].values)
 print(pred)
 print(error)
 print(np.sqrt(np.sum(error ** 2) / np.sum(df.cs.values)), np.sum(error) / np.sum(df.cs.values))
+
+irimodel_orig = irimodel
 
 if metric in ['mufd', 'fof2']:
     wls_model = sm.WLS(df[metric].values, np.vstack((pred.T, np.ones(len(df[metric].values)))).T, df.cs.values)
@@ -64,9 +66,10 @@ plt.draw_title(metric + ' iri')
 plt.write('/output/%s-iri.svg' % (metric))
 plt.write('/output/%s-iri.png' % (metric))
 
+residual_model = DifferenceModel(model, irimodel_orig)
 plt2 = Plot(metric, dt.datetime.now(timezone.utc))
 plt.scale_generic()
-plt.draw_contour(gp3dmodel)
+plt.draw_contour(residual_model)
 plt.draw_title(metric + ' residual')
 plt.write('/output/%s-residual.svg' % (metric))
 plt.write('/output/%s-residual.png' % (metric))
