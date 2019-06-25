@@ -32,7 +32,7 @@ irimodel_orig = irimodel
 
 if metric in ['mufd', 'fof2']:
     wls_model = sm.WLS(df[metric].values - pred, add_constant(pred, prepend=False), df.cs.values)
-    wls_fit = wls_model.fit()
+    wls_fit = wls_model.fit_regularized(alpha=np.array([1,3]), L1_wt=0)
     coeff = wls_fit.params
     coeff[0] = coeff[0] + 1
     print(coeff)
