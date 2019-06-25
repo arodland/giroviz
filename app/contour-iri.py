@@ -31,9 +31,10 @@ print(np.sqrt(np.sum(error ** 2) / np.sum(df.cs.values)), np.sum(error) / np.sum
 irimodel_orig = irimodel
 
 if metric in ['mufd', 'fof2']:
-    wls_model = sm.WLS(df[metric].values, add_constant(pred, prepend=False), df.cs.values)
+    wls_model = sm.WLS(df[metric].values - pred, add_constant(pred, prepend=False), df.cs.values)
     wls_fit = wls_model.fit()
     coeff = wls_fit.params
+    coeff[0] = coeff[0] + 1
     print(coeff)
 
     irimodel = LinearModel(irimodel, coeff[0], coeff[1])
