@@ -6,6 +6,7 @@ import numpy as np
 from models import GP3DModel, IRISplineModel, HybridModel, LogSpaceModel, LinearModel, ProductModel, DifferenceModel
 from plot import Plot
 import statsmodels.api as sm
+from statsmodels.tools import add_constant
 
 metric = sys.argv[1]
 
@@ -30,7 +31,7 @@ print(np.sqrt(np.sum(error ** 2) / np.sum(df.cs.values)), np.sum(error) / np.sum
 irimodel_orig = irimodel
 
 if metric in ['mufd', 'fof2']:
-    wls_model = sm.WLS(df[metric].values, np.vstack((pred.T, np.ones(len(df[metric].values)))).T, df.cs.values)
+    wls_model = sm.WLS(df[metric].values, add_constant(pred, prepend=False), df.cs.values)
     wls_fit = wls_model.fit()
     coeff = wls_fit.params
     print(coeff)
