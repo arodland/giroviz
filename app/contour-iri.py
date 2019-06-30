@@ -20,24 +20,11 @@ df = data.filter(df,
 irimodel = IRISplineModel("/iri.latest")
 irimodel.train(metric)
 
-pred = irimodel.predict(df['station.longitude'].values, df['station.latitude'].values)
-
-error = pred - df[metric].values
-print(df[metric].values)
-print(pred)
-print(error)
-print(np.sqrt(np.sum(error ** 2) / np.sum(df.cs.values)), np.sum(error) / np.sum(df.cs.values))
-
 irimodel_orig = irimodel
 
-if metric in ['mufd', 'fof2']:
-    wls_model = sm.WLS(df[metric].values - pred, add_constant(pred, prepend=False), df.cs.values)
-    wls_fit = wls_model.fit_regularized(alpha=np.array([1,3]), L1_wt=0)
-    coeff = wls_fit.params
-    coeff[0] = coeff[0] + 1
-    print(coeff)
-
-    irimodel = LinearModel(irimodel, coeff[0], coeff[1])
+if len(df) == 0:
+    model = irimodel
+else:
     pred = irimodel.predict(df['station.longitude'].values, df['station.latitude'].values)
     error = pred - df[metric].values
     print(df[metric].values)
@@ -45,16 +32,32 @@ if metric in ['mufd', 'fof2']:
     print(error)
     print(np.sqrt(np.sum(error ** 2) / np.sum(df.cs.values)), np.sum(error) / np.sum(df.cs.values))
 
-gp3dmodel = GP3DModel()
-gp3dmodel.train(df, np.log(df[metric].values) - np.log(pred))
 
-model = ProductModel(irimodel, LogSpaceModel(gp3dmodel))
-pred = model.predict(df['station.longitude'].values, df['station.latitude'].values)
-error = pred - df[metric].values
-print(df[metric].values)
-print(pred)
-print(error)
-print(np.sqrt(np.sum(error ** 2) / np.sum(df.cs.values)), np.sum(error) / np.sum(df.cs.values))
+    if metric in ['mufd', 'fof2']:
+        wls_model = sm.WLS(df[metric].values - pred, add_constant(pred, prepend=False), df.cs.values)
+        wls_fit = wls_model.fit_regularized(alpha=np.array([1,3]), L1_wt=0)
+        coeff = wls_fit.params
+        coeff[0] = coeff[0] + 1
+        print(coeff)
+
+        irimodel = LinearModel(irimodel, coeff[0], coeff[1])
+        pred = irimodel.predict(df['station.longitude'].values, df['station.latitude'].values)
+        error = pred - df[metric].values
+        print(df[metric].values)
+        print(pred)
+        print(error)
+        print(np.sqrt(np.sum(error ** 2) / np.sum(df.cs.values)), np.sum(error) / np.sum(df.cs.values))
+
+    gp3dmodel = GP3DModel()
+    gp3dmodel.train(df, np.log(df[metric].values) - np.log(pred))
+
+    model = ProductModel(irimodel, LogSpaceModel(gp3dmodel))
+    pred = model.predict(df['station.longitude'].values, df['station.latitude'].values)
+    error = pred - df[metric].values
+    print(df[metric].values)
+    print(pred)
+    print(error)
+    print(np.sqrt(np.sum(error ** 2) / np.sum(df.cs.values)), np.sum(error) / np.sum(df.cs.values))
 
 plt = Plot(metric, dt.datetime.now(timezone.utc))
 if metric == 'mufd':
