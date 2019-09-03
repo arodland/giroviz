@@ -1,6 +1,7 @@
 import data
 import datetime as dt
 from datetime import timezone
+import dateutil.parser
 import sys
 import numpy as np
 from models import GP3DModel, IRISplineModel, HybridModel, LogSpaceModel, LinearModel, ProductModel, DifferenceModel
@@ -9,6 +10,11 @@ import statsmodels.api as sm
 from statsmodels.tools import add_constant
 
 metric = sys.argv[1]
+nowtime = None
+if len(sys.argv) > 2:
+    nowtime = dateutil.parser.parse(sys.argv[2])
+else:
+    nowtime = dt.datetime.now(timezone.utc)
 
 df = data.get_data()
 df = data.filter(df, 
@@ -59,7 +65,7 @@ else:
     print(error)
     print(np.sqrt(np.sum(error ** 2) / np.sum(df.cs.values)), np.sum(error) / np.sum(df.cs.values))
 
-plt = Plot(metric, dt.datetime.now(timezone.utc))
+plt = Plot(metric, nowtime)
 if metric == 'mufd':
     plt.scale_mufd()
 else:
@@ -72,7 +78,7 @@ plt.write('/output/%s-iri.svg' % (metric))
 plt.write('/output/%s-iri.png' % (metric))
 
 residual_model = DifferenceModel(model, irimodel_orig)
-plt2 = Plot(metric, dt.datetime.now(timezone.utc))
+plt2 = Plot(metric, nowtime)
 plt.scale_generic()
 plt.draw_contour(residual_model)
 plt.draw_title(metric + ' residual')
