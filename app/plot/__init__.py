@@ -8,16 +8,29 @@ matplotlib.style.use('ggplot')
 import numpy as np
 
 class Plot:
-    def __init__(self, metric_name, date):
+    def __init__(self, metric_name, date, decorations=True):
         self.metric_name = metric_name
         self.date = date
+        self.decorations = decorations
 
         self.fig = plt.figure(figsize=(16,24))
-        self.ax = plt.axes(projection=ccrs.PlateCarree())
+        self.ax = plt.axes(
+            projection=ccrs.PlateCarree(),
+            frame_on=self.decorations,
+        )
         self.ax.set_global()
-        self.ax.grid(linewidth=.5, color='black', alpha=0.25, linestyle='--')
-        self.ax.set_xticks([-180, -160, -140, -120,-100, -80, -60,-40,-20, 0, 20, 40, 60,80,100, 120,140, 160,180], crs=ccrs.PlateCarree())
-        self.ax.set_yticks([-80, -60,-40,-20, 0, 20, 40, 60,80], crs=ccrs.PlateCarree())
+
+        if self.decorations:
+            self.ax.grid(linewidth=.5, color='black', alpha=0.25, linestyle='--')
+            self.ax.set_xticks([-180, -160, -140, -120,-100, -80, -60,-40,-20, 0, 20, 40, 60,80,100, 120,140, 160,180], crs=ccrs.PlateCarree())
+            self.ax.set_yticks([-80, -60,-40,-20, 0, 20, 40, 60,80], crs=ccrs.PlateCarree())
+        else:
+            self.ax.axis(False)
+            self.ax.outline_patch.set_visible(False)
+            self.ax.background_patch.set_visible(False)
+            self.ax.set_xmargin(0)
+            self.ax.set_ymargin(0)
+
         self.ax.add_feature(cartopy.feature.NaturalEarthFeature('physical', 'land', '110m',
             edgecolor='face',
             facecolor=np.array((0xdd,0xdd,0xcc))/256.,
@@ -66,8 +79,10 @@ class Plot:
                 prev = lev
 
         plt.clabel(CS2, levels, inline=True, fontsize=10, fmt='%.0f', use_clabeltext=True )
-        cbar = plt.colorbar(contour, fraction=0.03, orientation='horizontal', pad=0.02, format=matplotlib.ticker.ScalarFormatter())
-        cbar.add_lines(CS2)
+
+        if self.decorations:
+            cbar = plt.colorbar(contour, fraction=0.03, orientation='horizontal', pad=0.02, format=matplotlib.ticker.ScalarFormatter())
+            cbar.add_lines(CS2)
 
 
     def draw_title(self, metric):
@@ -92,6 +107,11 @@ class Plot:
                     )
 
     def write(self, filename):
+        if self.decorations:
             plt.tight_layout()
             plt.savefig(filename, dpi=180, bbox_inches='tight')
+        else:
+            plt.tight_layout(pad=0.0)
+            plt.savefig(filename, dpi=256, bbox_inches='tight', pad_inches=0.0)
+
 
