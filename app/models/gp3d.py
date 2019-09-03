@@ -1,5 +1,6 @@
 import numpy as np
 import rbf
+import rbf.gauss
 
 def sph_to_xyz(lon, lat):
     lon = lon * np.pi / 180.
