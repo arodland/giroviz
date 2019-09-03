@@ -7,7 +7,7 @@ RUN wget -O /tmp/ne_110m_land.zip http://naciscdn.org/naturalearth/110m/physical
 WORKDIR /root/.local/share/cartopy/shapefiles/natural_earth/physical
 RUN unzip /tmp/ne_110m_land.zip && rm /tmp/ne_110m_land.zip
 
-RUN conda create -y -q -n my_cartopy_env -c conda-forge python=3.7 cartopy statsmodels pandas cython xarray sympy networkx
+RUN conda create -y -q -n my_cartopy_env -c conda-forge python=3.7 matplotlib cartopy proj4=5.2.0 statsmodels pandas cython xarray sympy networkx
 
 ENV PATH /opt/conda/envs/my_cartopy_env/bin:$PATH
 
