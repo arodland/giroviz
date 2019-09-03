@@ -5,7 +5,7 @@ from pandas.io.json import json_normalize
 
 known_metrics = ['fof2', 'md', 'mufd', 'foes', 'foe', 'hmf2', 'tec']
 
-def get_data(url=os.getenv("METRICS_URI"), default_confidence=80):
+def get_data(url=os.getenv("METRICS_URI"), default_confidence=77):
     with urllib.request.urlopen(url) as res:
         data = json.loads(res.read().decode())
     df = json_normalize(data)

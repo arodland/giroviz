@@ -17,7 +17,7 @@ class GP3DModel:
 
     def train(self, df, t):
         x, y, z = sph_to_xyz(df['station.longitude'].values, df['station.latitude'].values)
-        stdev = 0.8 - 0.7 * df.cs
+        stdev = 0.254 - 0.158 * df.cs
 
         gp = rbf.gauss.gpiso(rbf.basis.mat32, (0.0, 1.0, 1.0))
         self.gp = gp_cond = gp.condition(np.vstack((x,y,z)).T, t, sigma=stdev)
