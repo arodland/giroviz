@@ -12,6 +12,7 @@ class Plot:
         self.metric_name = metric_name
         self.date = date
         self.decorations = decorations
+        self.plotalpha = 0.35
 
         self.fig = plt.figure(figsize=(16,24))
         self.ax = plt.axes(
@@ -42,9 +43,23 @@ class Plot:
 
 
     def scale_common(self):
-        self.cmap = plt.cm.get_cmap('viridis')
+        def map_cmap(f, cmap, lower=0, upper=1):
+            out = cmap(np.linspace(lower, upper, 256))
+            out = [ f(x) for x in out ]
+            return matplotlib.colors.ListedColormap(out)
+
+        cmap = plt.cm.get_cmap('viridis')
+        self.cmap = map_cmap(lambda x: [0.9*x[0], 0.9*x[1], 0.9*x[2], 1], cmap)
         self.cmap.set_under(self.cmap(1e-5))
         self.cmap.set_over(self.cmap(1 - 1e-5))
+
+        self.cmap_light = map_cmap(lambda x: [self.plotalpha*x[0]+(1-self.plotalpha), self.plotalpha*x[1]+(1-self.plotalpha), self.plotalpha*x[2]+(1-self.plotalpha), 1], cmap)
+        self.cmap_light.set_under(self.cmap_light(1e-5))
+        self.cmap_light.set_over(self.cmap_light(1 - 1e-5))
+
+        self.cmap_dark = map_cmap(lambda x: [0.7*x[0], 0.7*x[1], 0.7*x[2], 1], cmap)
+        self.cmap_dark.set_under(self.cmap_dark(1e-5))
+        self.cmap_dark.set_over(self.cmap_dark(1 - 1e-5))
 
     def scale_generic(self):
         self.scale_common()
@@ -53,8 +68,14 @@ class Plot:
 
     def scale_mufd(self):
         self.scale_common()
-        self.levels = [3, 3.5, 4, 4.6, 5.3, 6.1, 7, 8.2, 9.5, 11, 12.6, 14.6, 16.9, 19.5, 22.6, 26, 30]
-        self.norm = matplotlib.colors.LogNorm(3.5, 30, clip=False)
+        self.levels = [5.3, 7, 10.1, 14, 18, 21, 24.8, 28]
+        self.norm = matplotlib.colors.LogNorm(4, 35, clip=False)
+
+    def scale_fof2(self):
+        self.scale_common()
+        self.levels = [1.8, 3.5, 5.3, 7, 10.1, 14]
+        self.norm = matplotlib.colors.LogNorm(1.5, 15, clip=False)
+
 
     def draw_contour(self, model, lon_min=-180, lon_max=180, lon_steps=361, lat_min=-90, lat_max=90, lat_steps=181):
         loni = np.linspace(lon_min, lon_max, lon_steps)
@@ -62,14 +83,25 @@ class Plot:
         loni, lati = np.meshgrid(loni, lati)
         zi = model.predict(loni, lati)
 
-        contour = plt.contourf(loni, lati, zi, self.levels,
+
+        img = self.ax.imshow(
+                zi,
+                extent=(lon_min, lon_max, lat_min, lat_max),
                 cmap=self.cmap,
-                extend='both',
                 transform=ccrs.PlateCarree(),
-                alpha=0.3,
+                alpha=self.plotalpha,
                 norm=self.norm
                 )
-        CS2 = plt.contour(contour, linewidths=.5, alpha=.66, levels=contour.levels[1::1])
+
+        CS2 = plt.contour(
+                loni, lati, zi,
+                self.levels,
+                cmap=self.cmap_dark,
+                norm=self.norm,
+                linewidths=.6,
+                alpha=.75,
+                transform=ccrs.PlateCarree()
+                )
 
         prev = None
         levels = []
@@ -78,10 +110,19 @@ class Plot:
                 levels.append(lev)
                 prev = lev
 
-        plt.clabel(CS2, levels, inline=True, fontsize=10, fmt='%.0f', use_clabeltext=True )
+        plt.clabel(CS2, levels, inline=True, fontsize=10, fmt='%.0f', use_clabeltext=True)
 
         if self.decorations:
-            cbar = plt.colorbar(contour, fraction=0.03, orientation='horizontal', pad=0.02, format=matplotlib.ticker.ScalarFormatter())
+            cbar = plt.colorbar(
+                    plt.cm.ScalarMappable(norm=self.norm, cmap=self.cmap_light),
+                    extend='both',
+                    fraction=0.03,
+                    orientation='horizontal',
+                    pad=0.02,
+                    format=matplotlib.ticker.ScalarFormatter(),
+                    ticks=CS2.levels,
+                    drawedges=False
+                    )
             cbar.add_lines(CS2)
 
 
