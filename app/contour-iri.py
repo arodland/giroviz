@@ -68,6 +68,8 @@ else:
 plt = Plot(metric, nowtime)
 if metric == 'mufd':
     plt.scale_mufd()
+elif metric == 'fof2':
+    plt.scale_fof2()
 else:
     plt.scale_generic()
 
