@@ -49,7 +49,7 @@ class Plot:
             return matplotlib.colors.ListedColormap(out)
 
         cmap = plt.cm.get_cmap('viridis')
-        self.cmap = map_cmap(lambda x: [0.9*x[0], 0.9*x[1], 0.9*x[2], 1], cmap)
+        self.cmap = map_cmap(lambda x: [x[0], x[1], x[2], 1], cmap)
         self.cmap.set_under(self.cmap(1e-5))
         self.cmap.set_over(self.cmap(1 - 1e-5))
 
