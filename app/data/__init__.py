@@ -19,6 +19,7 @@ def get_data(url=os.getenv("METRICS_URI"), default_confidence=77):
 
     df.cs = df.cs.apply(pd.to_numeric)
     df.loc[df.cs == -1, 'cs'] = default_confidence
+    df.loc[df.cs > 100., 'cs'] = default_confidence
     df.cs = df.cs / 100.
 
     df.time = pd.to_datetime(df.time)
